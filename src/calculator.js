@@ -18,8 +18,15 @@
  */
 
 function exitError(msg) {
-  console.error('Error:', msg);
-  process.exitCode = 1;
+  const full = `Error: ${msg}`;
+  // When run as CLI, set process exit code; when required (e.g., tests), avoid setting global exitCode
+  if (require.main === module) {
+    console.error(full);
+    process.exitCode = 1;
+  } else {
+    // For tests, surface the message via stderr but do not modify process.exitCode
+    console.error(full);
+  }
 }
 
 function parseNums(strs) {
