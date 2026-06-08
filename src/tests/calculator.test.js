@@ -63,4 +63,33 @@ describe('Calculator core functions', () => {
     // compute will call exitError and return null
     expect(compute('add', nums)).toBeNull();
   });
+
+  // Extended operations tests (modulo, power, square root)
+  test('modulo: 5 % 2 = 1', () => {
+    const nums = parseNums(['5', '2']);
+    expect(compute('%', nums)).toBe(1);
+    expect(compute('mod', nums)).toBe(1);
+  });
+
+  test('power: 2 ^ 3 = 8 (aliases ** and pow)', () => {
+    const nums = parseNums(['2', '3']);
+    expect(compute('^', nums)).toBe(8);
+    expect(compute('**', nums)).toBe(8);
+    expect(compute('pow', nums)).toBe(8);
+  });
+
+  test('square root: sqrt 16 = 4 (single-arg)', () => {
+    const nums = parseNums(['16']);
+    expect(compute('sqrt', nums)).toBe(4);
+  });
+
+  test('modulo by zero returns null', () => {
+    const nums = parseNums(['10', '0']);
+    expect(compute('mod', nums)).toBeNull();
+  });
+
+  test('square root of negative number returns null', () => {
+    const nums = parseNums(['-9']);
+    expect(compute('sqrt', nums)).toBeNull();
+  });
 });
