@@ -38,27 +38,49 @@ function parseNums(strs) {
   return nums;
 }
 
-function compute(op, nums) {
-  if (nums.length < 2) {
-    exitError('At least two numeric arguments are required.');
+// Additional math helpers
+function modulo(a, b) {
+  if (b === 0) {
+    exitError('Modulo by zero is not allowed.');
     return null;
   }
+  return a % b;
+}
+
+function power(base, exponent) {
+  return Math.pow(base, exponent);
+}
+
+function squareRoot(n) {
+  if (n < 0) {
+    exitError('Square root of negative number is not allowed.');
+    return null;
+  }
+  return Math.sqrt(n);
+}
+
+function compute(op, nums) {
+  // Validate and dispatch per-operation so unary ops (sqrt) are supported
   switch (op) {
     case 'add':
     case '+':
+      if (nums.length < 2) { exitError('At least two numeric arguments are required for addition.'); return null; }
       return nums.reduce((a, b) => a + b, 0);
     case 'subtract':
     case 'sub':
     case '-':
+      if (nums.length < 2) { exitError('At least two numeric arguments are required for subtraction.'); return null; }
       return nums.reduce((a, b) => a - b);
     case 'multiply':
     case 'mul':
     case '*':
     case 'x':
+      if (nums.length < 2) { exitError('At least two numeric arguments are required for multiplication.'); return null; }
       return nums.reduce((a, b) => a * b, 1);
     case 'divide':
     case 'div':
     case '/':
+      if (nums.length < 2) { exitError('At least two numeric arguments are required for division.'); return null; }
       for (let i = 1; i < nums.length; i++) {
         if (nums[i] === 0) {
           exitError('Division by zero is not allowed.');
@@ -66,6 +88,18 @@ function compute(op, nums) {
         }
       }
       return nums.reduce((a, b) => a / b);
+    case 'mod':
+    case '%':
+      if (nums.length !== 2) { exitError('Modulo requires exactly two numeric arguments.'); return null; }
+      return modulo(nums[0], nums[1]);
+    case 'pow':
+    case '**':
+    case '^':
+      if (nums.length !== 2) { exitError('Power requires exactly two numeric arguments (base and exponent).'); return null; }
+      return power(nums[0], nums[1]);
+    case 'sqrt':
+      if (nums.length !== 1) { exitError('Square root requires exactly one numeric argument.'); return null; }
+      return squareRoot(nums[0]);
     default:
       exitError(`Unknown operation: ${op}`);
       return null;
@@ -118,4 +152,4 @@ if (require.main === module) {
 }
 
 // Export functions for testing
-module.exports = { compute, parseNums, exitError };
+module.exports = { compute, parseNums, exitError, modulo, power, squareRoot };
