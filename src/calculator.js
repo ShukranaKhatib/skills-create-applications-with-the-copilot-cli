@@ -65,45 +65,50 @@ function compute(op, nums) {
   }
 }
 
-const argv = process.argv.slice(2);
-if (argv.length === 0) {
-  console.log('Usage: node src/calculator.js <operation> <num1> <num2> [num3 ...]');
-  console.log('Operations: add, subtract, multiply, divide (also support + - * /)');
-  process.exit(0);
+if (require.main === module) {
+  const argv = process.argv.slice(2);
+  if (argv.length === 0) {
+    console.log('Usage: node src/calculator.js <operation> <num1> <num2> [num3 ...]');
+    console.log('Operations: add, subtract, multiply, divide (also support + - * /)');
+    process.exit(0);
+  }
+
+  let op;
+  let numArgs;
+
+  // Support two forms:
+  // 1) word form: add 2 3  -> op = add, nums = [2,3]
+  // 2) infix form: 2 + 3  -> op = +, nums = [2,3]
+  if (argv.length >= 3 && isNaN(Number(argv[0]))) {
+    // word form: operation then numbers
+    op = argv[0].toLowerCase();
+    numArgs = argv.slice(1);
+  } else if (argv.length === 3 && !isNaN(Number(argv[0])) && isNaN(Number(argv[1])) && !isNaN(Number(argv[2]))) {
+    // infix: num op num
+    op = argv[1];
+    numArgs = [argv[0], argv[2]];
+  } else if (argv.length >= 2 && !isNaN(Number(argv[0])) && argv.length >= 3 && isNaN(Number(argv[1]))) {
+    // handle: 10 - 2 3  (treat as left-assoc: 10 - 2 - 3)
+    op = argv[1];
+    numArgs = [argv[0], ...argv.slice(2)];
+  } else {
+    // fallback: assume first is op
+    op = argv[0].toLowerCase();
+    numArgs = argv.slice(1);
+  }
+
+  const nums = parseNums(numArgs);
+  if (!nums) {
+    exitError('One or more arguments are not valid numbers.');
+    process.exit(1);
+  }
+
+  const result = compute(op, nums);
+  if (result === null) process.exit(1);
+
+  // Output result (plain number)
+  console.log(result);
 }
 
-let op;
-let numArgs;
-
-// Support two forms:
-// 1) word form: add 2 3  -> op = add, nums = [2,3]
-// 2) infix form: 2 + 3  -> op = +, nums = [2,3]
-if (argv.length >= 3 && isNaN(Number(argv[0]))) {
-  // word form: operation then numbers
-  op = argv[0].toLowerCase();
-  numArgs = argv.slice(1);
-} else if (argv.length === 3 && !isNaN(Number(argv[0])) && isNaN(Number(argv[1])) && !isNaN(Number(argv[2]))) {
-  // infix: num op num
-  op = argv[1];
-  numArgs = [argv[0], argv[2]];
-} else if (argv.length >= 2 && !isNaN(Number(argv[0])) && argv.length >= 3 && isNaN(Number(argv[1]))) {
-  // handle: 10 - 2 3  (treat as left-assoc: 10 - 2 - 3)
-  op = argv[1];
-  numArgs = [argv[0], ...argv.slice(2)];
-} else {
-  // fallback: assume first is op
-  op = argv[0].toLowerCase();
-  numArgs = argv.slice(1);
-}
-
-const nums = parseNums(numArgs);
-if (!nums) {
-  exitError('One or more arguments are not valid numbers.');
-  process.exit(1);
-}
-
-const result = compute(op, nums);
-if (result === null) process.exit(1);
-
-// Output result (plain number)
-console.log(result);
+// Export functions for testing
+module.exports = { compute, parseNums, exitError };
